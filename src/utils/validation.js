@@ -17,10 +17,10 @@ const  validateSignUpData=(req)=>{
     {
         throw new Error("Invalid email address");
     }
-    else if(!validator.isStrongPassword(password))
-    {
-        throw new Error("please enter strong password");
-    }
+    //else if(!validator.isStrongPassword(password))
+    //{
+      //  throw new Error("please enter strong password");
+    //}
 };
 
 module.exports=
