@@ -1,35 +1,97 @@
-const express = require('express');
-
+const express = require("express");
+const connectDB = require("./config/database");
 const app = express();
+const User = require("./models/user");
 
+app.use(express.json());
 
-
-app.use("/testing",(req,res)=>{
-    res.send("Hello from the server!");
-});
-
-app.get("/user",(req,res)=>
+app.post("/signup",async (req,res)=>
 {
-    res.send({firstname:"sujit",lastname:"dudhe"})
-})
-
-app.post("/user",(req,res)=>
+     
+    const user = new User(req.body);
+    try
     {
-        console.log("save to the data database");
-        res.send("data save successfully");
-    })
+        await user.save();
+        res.send("User added successfully");
+    } catch(err)
+    {
+        res.status(400).send("Error Saving the user:"+err.message);
+    }
 
-    
-    app.delete("/user",(req,res)=>
-        {
-            console.log("delete to the data database");
-            res.send("data delete successfully");
-        })
-    
-    
-        
-    
-app.listen(3000,()=>{
-    console.log("Servers is successfully listnening port numert 3000");
 });
-console.log("Starting a new project");
+
+app.get("/user",async (req,res)=>
+{
+    const userEmail = req.body.emailId;
+    try{
+        const user = await User.find({emailId: userEmail});
+        if(user.length === 0)
+        {
+            res.status(404).send("user not found");
+        }
+        else
+        {
+            res.send(user);
+        }
+    }
+    catch(err)
+    {
+        res.status(400).send("Can not find user");
+    }
+});
+
+app.get("/feed",async(req,res)=>
+{
+    try
+    {
+        const users = await User.find({});
+        res.send(users);
+    }
+    catch(err)
+    {
+        res.status(400).send("Can not find user");
+    }
+});
+
+
+app.delete("/user",async(req,res)=>
+{
+    const userId = req.body.userId;
+    try{
+            const user = await User.findByIdAndDelete(userId);
+
+            res.send("User deleted succusefull");
+    }
+    catch(err)
+    {
+        res.status(400).send("Can not find user");
+    }
+});
+
+
+app.patch("/user",async (req,res)=>
+{
+    const userId = req.body.userId;
+    const data = req.body;
+    try
+    {       
+            await User.findByIdAndUpdate({_id: userId }, data);
+            res.send("User updated succusefull");
+    }
+    catch(err)
+    {
+        res.status(400).send("Can not find user");
+    }
+});
+
+connectDB()
+    .then(() => {
+        console.log("Database connected successfully");
+
+        app.listen(3000, () => {
+            console.log("Server is successfully listening on port 3000");
+        });
+    })
+    .catch((err) => {
+        console.log("Database cannot be connected", err);
+    });
